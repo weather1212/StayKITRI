@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="around">
+	<select id="aroundbseq" parameterType="hashmap"
+		resultType="around">
+		select *
+		from (select
+		lead(b_seq, 1) over (order by b_seq) as nextbseq,
+		b_seq as centerbseq,
+		lag(b_seq, 1) over (order by b_seq) as prebseq
+		from (select b_seq from board where b_boardtype = #{b_boardtype}
+		order by b_seq desc))
+		where centerbseq = #{b_seq}
+	</select>
+</mapper>

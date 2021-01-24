@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board">
+	<insert id="boardwrite" parameterType="board">
+	insert into board
+		values((select nvl(max(b_seq)+1, 1) from board ),
+		#{b_boardtype},
+		#{b_writer},
+		#{b_password},
+		#{b_title},
+		#{b_content},
+		sysdate,
+		0,
+		#{b_file})
+		
+		
+	</insert>
+	<select id="totaltypeboard" parameterType="int" resultType="int">
+		select count(*) from board where b_boardtype = #{b_boardtype}
+	</select>
+	
+	<update id="boardviewcountup" parameterType="int">
+		update board set b_viewcount = b_viewcount + 1 where b_seq = #{b_seq}
+	</update>
+	
+	<select id="totalboard" resultType="board">
+		select * from board order by b_seq desc
+	</select>
+	
+	<select id = "groupboard" parameterType="hashmap" resultType="board">
+		select r, b_seq, b_boardtype, b_writer, b_title, b_date, b_viewcount
+from (select rownum r, b_seq, b_boardtype, b_writer, b_title, b_date, b_viewcount
+from (select b_seq, b_boardtype, b_writer, b_title, b_date, b_viewcount from board where b_boardtype = #{b_boardtype} order by b_seq desc))
+where r between #{bottomboard} and #{topboard}
+	</select>
+	<select id="totalboardnum" parameterType="int" resultType="int">
+		select count(*) from board where b_boardtype =#{b_boardtype} 
+	</select>
+	
+	<select id="boarddetail" parameterType="int" resultType="board">
+		select b_seq, b_boardtype, b_writer, b_title, b_content, b_date, b_viewcount, b_file
+		from board
+		where b_seq = #{b_seq}
+	</select>
+	<update id="countupdate" parameterType="int">
+		update board
+		set b_viewcount = (select b_viewcount from board where b_seq = #{b_seq}) + 1
+		where b_seq = #{b_seq}
+	</update>
+	
+	<update id="boardupdate" parameterType="board">
+		update board set b_writer = #{b_writer}, b_password = #{b_password}, b_title = #{b_title}, b_content = #{b_content}, b_date = sysdate
+		where b_seq = #{b_seq}
+	</update>
+
+	<delete id="boarddelete" parameterType="int">
+		delete board where b_seq = #{b_seq}
+	</delete>
+	
+	<select id="confirmpassword" parameterType="hashmap" resultType="int">
+		select b_seq
+		from board where b_seq = #{b_seq} and b_password = #{b_password}
+	</select>
+	
+</mapper>
